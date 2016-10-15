@@ -2,31 +2,30 @@
 
 #Input: Location, Datetime, Route, Crimes
 
-import mySQLdb
+import MySQLdb, sys
+from sshtunnel import SSHTunnelForwarder
+
+with SSHTunnelForwarder(ssh_address_or_host=("138.68.141.107", 22), ssh_password="django-m0ses", ssh_username="root", remote_bind_address=("localhost", 3306)) as server:
+    #try:
+        connection = MySQLdb.connect(host="localhost", port=3306, user="python", passwd="python", db="crimemoses")
+
+        cur = connection.cursor()
+        cur.execute("SELECT VERSION()")
+
+        ver = cur.fetchone()
+
+        print("Database version : %s " % ver)
+
+    #except:
+
+    #    print("There was an error")
 
 
 
-import sys
 
-try:
-    con = MySQLdb.connect(host="136.68.141.107", port=22, user="root", passwd="django-m0ses", db="crimemoses");
 
-    cur = con.cursor()
-    cur.execute("SELECT VERSION()")
 
-    ver = cur.fetchone()
+    #finally:
 
-    print
-    "Database version : %s " % ver
-
-except mdb.Error, e:
-
-    print
-    "Error %d: %s" % (e.args[0], e.args[1])
-    sys.exit(1)
-
-finally:
-
-    if con:
-        con.close()
-
+        if connection:
+             connection.close()
