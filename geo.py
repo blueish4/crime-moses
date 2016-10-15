@@ -3,35 +3,41 @@ import geocoder
 import googlemaps
 import json
 import re
-
+import time
+from collections import OrderedDict
 from googlemaps import Client
-gmaps = Client("AIzaSyAKn5itEtU3TzRJnIlOTtMgsKCjAOcUAFI")
 
-address = 'Douglas Park, Chicago, IL, USA'
-destination = '10000 W O\'Hare Ave, Chicago, IL , United States '
+gmaps = Client("AIzaSyAKn5itEtU3TzRJnIlOTtMgsKCjAOcUAFI") #key to access google API
 
-directions_list = []
-places = []
 
-directions = gmaps.directions(address, destination,  mode='walking')
+def zipcode_route(address, destination,transport):
+    directions = gmaps.directions(address, destination,  mode=transport) #Get the step by step directions for the route from affrss to destination
 
-print(directions)
+    directions_list=[]
 
-for step in directions[0]['legs'][0]['steps']:
-    #print(step['start_location'])
-    directions_list.append(step['start_location'])
+    for step in directions[0]['legs'][0]['steps']:
+        directions_list.append(step['start_location'])  #Ignore all data except for latitude and longitude of each step
 
-print(directions_list[0])
-print()
-print(directions_list[5])
+    place = []
 
-place = []
+    for j in range(len(directions_list)-1):
+        place.append(str(geocoder.google(directions_list[j], method='reverse')))  # Get the full address of each step
+        time.sleep(1) # Has to sleep in order to give geoccode time to translate point
 
-for j in range(len(directions_list)-1):
-    place.append(str(geocoder.google(directions_list[j], method='reverse')))
+    for k in range(len(place)):
+        place[k] = place[k][-15:-7] # Removes everything except for the postcode
 
-print(place)
-for k in range(len(place)-1):
-    place[k] = place[k][-15:-7]
+    final = []
 
-print(place)
+    for i in range(len(place)-1):
+        if place[i]!= place[i+1]:  #Only add one of every postcode
+            final.append(place[i])
+
+    final.append(place[len(place)-1]) #Add final postcode that is missed out by the above loop
+
+    return final
+
+
+
+print(zipcode_route('Douglas Park, Chicago, IL, USA', '10000 W O\'Hare Ave, Chicago, IL , United States ','walking'))
+
